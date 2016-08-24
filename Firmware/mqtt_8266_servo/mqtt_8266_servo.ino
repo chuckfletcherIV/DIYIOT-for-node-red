@@ -1,4 +1,4 @@
-#include <ESP8266WiFi.h>
+  #include <ESP8266WiFi.h>
 #include <PubSubClient.h>
 #include <Servo.h> 
 Servo myservo;
@@ -13,10 +13,10 @@ String myMsg;
 
 WiFiClient espClient;
 PubSubClient client(espClient);
-
+int servoId = 0;
 int potVal = 0; // Potentiometer value
 int ledPosition; // Position of active LED
-int lastpot = 0;  // last potentiometer reading to compair with
+int lastpot = 0;  // last potentiometer reading to compare with
 
 void setup()
 {
@@ -56,7 +56,7 @@ void callback(char* topic, byte* payload, unsigned int length) {
   Serial.print(topic);
   Serial.print("] ");
   payload[length] = '\0';
-  String potValString = String((char*)payload);
+  String serv = String((char*)payload);
   potVal = potValString.toInt();
   Serial.println("Received: " + String(potVal));
 }

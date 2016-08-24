@@ -1,29 +1,40 @@
-#include <SPI.h>
-#include "MFRC522.h"
 #include <ESP8266WiFi.h>
 #include <PubSubClient.h>
+#include <Servo.h> 
+#include <Wire.h>
+#include <Adafruit_PWMServoDriver.h>
+
+Adafruit_PWMServoDriver pwm = Adafruit_PWMServoDriver();
+
+#define SERVOMIN  0 // this is the 'minimum' pulse length count (out of 4096)
+#define SERVOMAX  4096 // this is the 'maximum' pulse length count (out of 4096)
+
+uint8_t servonum = 0;
 
 const char* ssid     = "DIYIOT";
 const char* password = "diyiotdiyiot";
 const char* mqtt_server = "10.10.10.3";
-const char* topic = "rfid/1";
+const char* topic = "servo/1";
 char msg[50];
+char message_buffer[100];
+String myMsg;
 
 WiFiClient espClient;
 PubSubClient client(espClient);
 
+int potVal = 0; // Potentiometer value
+int ledPosition; // Position of active LED
+int lastpot = 0;  // last potentiometer reading to compare with
 
-#define RST_PIN 16 // RST-PIN for RC522 - RFID - SPI - Modul GPIO15 
-#define SS_PIN  5  // SDA-PIN for RC522 - RFID - SPI - Modul GPIO2 
-MFRC522 mfrc522(SS_PIN, RST_PIN);   // Create MFRC522 instance
-
-void setup() {
-  Serial.begin(115200);    // Initialize serial communications
-  SPI.begin();           // Init SPI bus
-  mfrc522.PCD_Init();    // Init MFRC522
+void setup()
+{
+  Serial.begin(115200);  
   setup_wifi();
   client.setServer(mqtt_server, 1883);
   client.setCallback(callback);
+  pwm.begin();
+  pwm.setPWMFreq(60);  // Analog servos run at ~60 Hz updates
+  yield();
 }
 
 void setup_wifi() {
@@ -48,14 +59,25 @@ void setup_wifi() {
 }
 
 void callback(char* topic, byte* payload, unsigned int length) {
+  Serial.print("Message arrived [");
+  Serial.print(topic);
+  Serial.print("] ");
+  payload[length] = '\0';
+  String message = String((char*)payload);
+  int commaIndex = message.indexOf(',');
+  int secondCommaIndex = message.indexOf(',', commaIndex+1);
+  int servonum = message.substring(0, commaIndex).toInt();
+  int = potValString.substring(commaIndex+1, secondCommaIndex);
+  potVal = potValString.toInt();
+  Serial.print("Received: " + String(potVal));
+    Serial.println(": " + servonum);
 }
 
 void reconnect() {
   // Loop until we're reconnected
   while (!client.connected()) {
     
-      Serial.print("Attempting MQTT connection...");
-    // Attempt to connect
+    Serial.print("Attempting MQTT connection...");
     if (client.connect(topic)) {
       Serial.println("connected");
       // Once connected, publish an announcement...
@@ -72,35 +94,15 @@ void reconnect() {
   }
 }
 
-
-void loop() { 
-  
+void loop()
+{ 
+    delay(250);
     if (!client.connected()) {
     reconnect();
-  }
-
-   client.loop();
-  
-  if(mfrc522.PICC_IsNewCardPresent()) {
-    unsigned long uid = getID();
-    if(uid != -1){
-      String myUIDString = String(uid);
-      myUIDString.toCharArray(msg,50);
-      Serial.print("Card detected, UID: "); Serial.println(uid);
-      client.publish(topic, msg);      
     }
-  }
+        client.loop(); 
+        pulselen = map(potVal, 0, 360, SERVOMIN, SERVOMAX);
+        pwm.setPWM(servonum, 0, pulselen);
 }
 
-unsigned long getID(){
-  if ( ! mfrc522.PICC_ReadCardSerial()) { //Since a PICC placed get Serial and continue
-    return -1;
-  }
-  unsigned long hex_num;
-  hex_num =  mfrc522.uid.uidByte[0] << 24;
-  hex_num += mfrc522.uid.uidByte[1] << 16;
-  hex_num += mfrc522.uid.uidByte[2] <<  8;
-  hex_num += mfrc522.uid.uidByte[3];
-  mfrc522.PICC_HaltA(); // Stop reading
-  return hex_num;
-}
+

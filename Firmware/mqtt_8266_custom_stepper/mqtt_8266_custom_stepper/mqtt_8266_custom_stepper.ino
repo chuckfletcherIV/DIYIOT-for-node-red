@@ -1,18 +1,11 @@
+#include <CustomStepper.h>
 #include <ESP8266WiFi.h>
 #include <PubSubClient.h>
 
-//declare variables for the motor pins
-int motorPin1 = 12;    // Blue   - 28BYJ48 pin 1
-int motorPin2 = 13;    // Pink   - 28BYJ48 pin 2
-int motorPin3 = 14;    // Yellow - 28BYJ48 pin 3
-int motorPin4 = 16;    // Orange - 28BYJ48 pin 4
-                        // Red    - 28BYJ48 pin 5 (VCC)
-
-int motorSpeed = 1200;  //variable to set stepper speed
-int count = 0;          // count of steps made
-int countsperrev = 512; // number of steps per full revolution
-int lookup[8] = {B01000, B01100, B00100, B00110, B00010, B00011, B00001, B01001};
-
+CustomStepper stepper(12, 13, 14, 16, (byte[]){8, B1000, B1100, B0100, B0110, B0010, B0011, B0001, B1001}, 4075.7728395, 12, CW);
+boolean rotate1 = false;
+boolean rotatedeg = false;
+boolean crotate = false;
 
 // Update these with values suitable for your network.
 
@@ -29,11 +22,11 @@ String data;
 
 //////////////////////////////////////////////////////////////////////////////
 void setup() {
-  //declare the motor pins as outputs
-  pinMode(motorPin1, OUTPUT);
-  pinMode(motorPin2, OUTPUT);
-  pinMode(motorPin3, OUTPUT);
-  pinMode(motorPin4, OUTPUT);
+  //sets the RPM
+  stepper.setRPM(12);
+  //sets the Steps Per Rotation, in this case it is 64 * the 283712/4455 annoying ger ratio
+  //for my motor (it works with float to be able to deal with these non-integer gear ratios)
+  stepper.setSPR(4075.7728395);
   Serial.begin(115200);
   setup_wifi();
   client.setServer(mqtt_server, 1883);
@@ -67,16 +60,28 @@ void callback(char* topic, byte* payload, unsigned int length) {
   Serial.print("] ");
   for (int i = 0; i < length; i++) {
     Serial.print((char)payload[i]);
-    // turn payload into message and react to it. If turnClockwise or if turnAnticlockwise or number of steps ( ie clockwise,#steps) or (anticlockwise,#steps), or stop
     payload[length] = '\0';
     String messageIn = String((char*)payload);
-    if (messageIn == "turnClockwise") {
-          turnClockwise();
-    } else if (messageIn == "turnAnticlockwise")
+    //split out degrees
+    if (messageIn == "ccw") {
+        //this method sets the direction of rotation, has 3 allowed values (CW, CCW, and STOP) 
+        //clockwise and counterclockwise for the first 2
+        stepper.setDirection(CCW);
+        //this method sets the motor to rotate a given number of times, if you don't specify it, 
+        //the motor will rotate untilyou send another command or set the direction to STOP
+        stepper.rotate();
+        rotate1 = true;
+    } else if (messageIn == "cw")
+    {
+        stepper.setDirection(CW);
+        //this method makes the motor rotate a given number of degrees, it works with float
+        //you can give angles like 90.5, but you can't give negative values, it rotates to the direction currently set
+        stepper.rotate();
+        rotatedeg = true;
     {
       turnAnticlockwise();
     } else if (messageIn == "stop") {
-      turnStop();
+      stepper.setDirection(STOP);
     }
     
   }
@@ -108,46 +113,15 @@ void reconnect() {
 
 //////////////////////////////////////////////////////////////////////////////
 void loop(){
-  
-  
+    
   client.loop();    
 
   if (!client.connected()) {
     reconnect();
-  }  
+  } 
+ 
+    stepper.run();
   
 }
 
-//////////////////////////////////////////////////////////////////////////////
-//set pins to ULN2003 high in sequence from 1 to 4
-//delay "motorSpeed" between each pin setting (to determine speed)
-void turnAntiClockwise()
-{
-  for(int i = 0; i < 8; i++)
-  {
-    setOutput(i);
-    delayMicroseconds(motorSpeed);
-  }
-}
 
-void turnClockwise()
-{
-  for(int i = 7; i >= 0; i--)
-  {
-    setOutput(i);
-    delayMicroseconds(motorSpeed);
-  }
-}
-
-void turnStop() 
-{
-  //figure out how to stop......
-}
-
-void setOutput(int out)
-{
-  digitalWrite(motorPin1, bitRead(lookup[out], 0));
-  digitalWrite(motorPin2, bitRead(lookup[out], 1));
-  digitalWrite(motorPin3, bitRead(lookup[out], 2));
-  digitalWrite(motorPin4, bitRead(lookup[out], 3));
-}

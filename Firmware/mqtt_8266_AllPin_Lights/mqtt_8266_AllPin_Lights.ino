@@ -9,6 +9,16 @@ char msg[50];
 char message_buffer[100];
 
 
+// Board Pin # to Chip Pin #
+// Board 7 = Chip 5
+// Board 6 = Chip 4
+// Board 5 = Chip 2
+// Board 4 = Chip 13
+// Board 3 = Chip 12
+// Board 2 = Chip 14
+// Board 1 = Chip 16
+
+
 WiFiClient espClient;
 PubSubClient client(espClient);
 
@@ -21,7 +31,8 @@ pinMode(13, OUTPUT);
 pinMode(14, OUTPUT);
 pinMode(16, OUTPUT);
 pinMode(04, OUTPUT);
-pinMode(05, OUTPUT); 
+pinMode(05, OUTPUT);
+pinMode(02, OUTPUT); 
 client.setServer(mqtt_server, 1883);
 client.setCallback(callback);
 }
@@ -67,21 +78,22 @@ void callback(char* topic, byte* payload, unsigned int length) {
     digitalWrite(pin, LOW);
   }  
   
-    if (command == "allon") {
+  if (command == "allon") {
     digitalWrite(12, HIGH);
         digitalWrite(13, HIGH);
             digitalWrite(14, HIGH);
                 digitalWrite(16, HIGH);
                     digitalWrite(04, HIGH);
                         digitalWrite(05, HIGH);
+                          digitalWrite(02, HIGH);
   } else if (command == "alloff") {
         digitalWrite(12, LOW);
-        digitalWrite(13, LOW);
+          digitalWrite(13, LOW);
             digitalWrite(14, LOW);
                 digitalWrite(16, LOW);
                     digitalWrite(04, LOW);
                         digitalWrite(05, LOW);
-    digitalWrite(pin, LOW);
+                          digitalWrite(02, LOW);
   }  
 }
 
@@ -95,7 +107,7 @@ void reconnect() {
     if (client.connect(topic)) {
       Serial.println("connected");
       // Once connected, publish an announcement...
-      client.publish(topic, "connected");
+      client.publish(topic, "connected!");
       client.subscribe(topic);
     } else {
       Serial.print("failed, rc=");
