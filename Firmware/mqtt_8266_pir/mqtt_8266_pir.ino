@@ -9,14 +9,14 @@ char msg[50];
 char message_buffer[100];
 String myMsg;
 
-int calibrationTime = 30;        
+int calibrationTime = 15;        
 
 //the time when the sensor outputs a low impulse
 long unsigned int lowIn;         
 
 //the amount of milliseconds the sensor has to be low 
 //before we assume all motion has stopped
-long unsigned int pause = 5000;  
+long unsigned int pause = 2000;  
 
 boolean lockLow = true;
 boolean takeLowTime;  
@@ -90,6 +90,7 @@ void reconnect() {
       Serial.println("Connected");
       // Once connected, publish an announcement...
       client.publish(topic, "connected");
+      client.publish("channels", topic);
       // ... and resubscribe
       //client.subscribe(topic);
     } else {

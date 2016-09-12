@@ -6,7 +6,7 @@
 const char* ssid     = "DIYIOT";
 const char* password = "diyiotdiyiot";
 const char* mqtt_server = "10.10.10.3";
-const char* topic = "knob/1";
+const char* topic = "knob/3";
 
 WiFiClient espClient;
 PubSubClient client(espClient);
@@ -45,13 +45,13 @@ void setup_wifi() {
 }
 
 void callback(char* topic, byte* payload, unsigned int length) {
-  Serial.print("Message arrived [");
-  Serial.print(topic);
-  Serial.print("] ");
-  for (int i = 0; i < length; i++) {
-    Serial.print((char)payload[i]);
-  }
-  Serial.println();
+//  Serial.print("Message arrived [");
+//  Serial.print(topic);
+//  Serial.print("] ");
+//  for (int i = 0; i < length; i++) {
+//    Serial.print((char)payload[i]);
+//  }
+//  Serial.println();
 }
 
 void reconnect() {
@@ -63,7 +63,7 @@ void reconnect() {
     if (client.connect(topic)) {
       Serial.println("connected");
       // Once connected, publish an announcement...
-      client.publish(topic, "connected");
+      client.publish("channels", topic);
       // ... and resubscribe
       client.subscribe(topic);
     } else {
@@ -76,7 +76,9 @@ void reconnect() {
   }
 }
 void loop() {
-  data = String(analogRead(A0));
+  delay(250);
+  data = String (analogRead(A0));
+
 
   if (!client.connected()) {
     reconnect();
@@ -84,7 +86,7 @@ void loop() {
 
     client.loop();
       data.toCharArray(msg,50);
-      Serial.print("Publish message: ");
-      Serial.println(msg);
+      //Serial.print("Publish message: ");
+      //Serial.println(msg);
       client.publish(topic, msg);
 }

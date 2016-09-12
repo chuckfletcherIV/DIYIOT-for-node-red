@@ -6,16 +6,17 @@ const char* password = "diyiotdiyiot";
 const char* mqtt_server = "10.10.10.3";
 const char* topic = "button/1";
 
+int buttonpin = 13;
+
 WiFiClient espClient;
 PubSubClient client(espClient);
 char msg[50];
-String state = "LOW";
 
 void setup() {
   //start serial connection
   Serial.begin(115200);
 
-  pinMode(4, INPUT_PULLUP);
+  pinMode(buttonpin, INPUT);
   setup_wifi();
   client.setServer(mqtt_server, 1883);
   client.setCallback(callback);
@@ -61,9 +62,10 @@ void reconnect() {
     if (client.connect(topic)) {
       Serial.println("connected");
       // Once connected, publish an announcement...
-      client.publish("tppic", "connected");
+      client.publish(topic, "connected");
+      client.publish("channels", topic);
       // ... and resubscribe
-      client.subscribe(topic);
+      //client.subscribe(topic);
     } else {
       Serial.print("failed, rc=");
       Serial.print(client.state());
@@ -75,20 +77,18 @@ void reconnect() {
 }
 
 void loop() {
-  
-    state = digitalRead(13);
-    delay(500);
+    delay(250);
 
   if (!client.connected()) {
     reconnect();
   }
 
     client.loop();
-    String myMessage = "Button Pressed";
+    String myMessage = "button pressed";
     myMessage.toCharArray(msg,50);
     
     
-  int sensorVal = digitalRead(13);
+  int sensorVal = digitalRead(buttonpin);
   //print out the value of the pushbutton
   //Serial.println(sensorVal);
 
