@@ -5,7 +5,7 @@ The goal of the project is to put sensors (and actuators like servos or leds) on
 
 Using Node-red, these devices can trigger or be triggered by any IOT activity you can think of. Node-red has dozens of supported IOT hooks to services and devices, like Hue or Lifx light bulbs, twitter integration or even the ability to send txt messages via twilio.
 
-See DIY Board and Sensor Pin Map to figure out what board to use for which sensor, also see notes.
+See DIY Board and Sensor Pin Map to figure out what board to use for which sensor (or actuator), also see notes for more advanced usage.
 
 If you find a cheap commodity sensor that works great with an exisiting board - let us know so we can add it to the list.
 
