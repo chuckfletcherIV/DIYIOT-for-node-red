@@ -7,7 +7,7 @@ Using Node-red, these devices can trigger or be triggered by any IOT activity yo
 
 No coding is required for basic functionality. All data is sent to Node-red for processing and triggering. Node-red lets you do alot without coding as well, but if you need to code, you can do what you need to with simple javascript. 
 
-DIYIOT is great for home automation projects, DIY escape rooms and halloween displays, and even interactive installations. For more permanent installations, sensors can be soldered directly into the board, vs using a header (which makes the sensor removable). 
+DIYIOT is great for home automation projects, DIY escape rooms and halloween displays, and even interactive installations. For more permanent installations, sensors can be soldered directly into the board, vs using a header (which makes the sensor swappable). 
 
 See DIY Board and Sensor Pin Map to figure out what board to use for which sensor (or actuator), also see notes for more advanced usage.
 
