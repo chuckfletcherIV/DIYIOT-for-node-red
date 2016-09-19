@@ -66,7 +66,7 @@
 <text x="52.07" y="76.2" size="1.778" layer="25">G</text>
 <text x="55.88" y="76.2" size="1.778" layer="25">V</text>
 <text x="64.77" y="76.2" size="1.778" layer="25">SCL</text>
-<text x="24.13" y="49.53" size="1.778" layer="25" rot="R90">DIYIOT - Board D</text>
+<text x="24.13" y="49.53" size="1.778" layer="25" rot="R90">DIYIOT - Board K</text>
 <text x="58.42" y="76.2" size="1.778" layer="25">SDA</text>
 </plain>
 <libraries>

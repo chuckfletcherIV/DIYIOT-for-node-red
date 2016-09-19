@@ -12,7 +12,7 @@ boolean crotate = false;
 const char* ssid     = "DIYIOT";
 const char* password = "diyiotdiyiot";
 const char* mqtt_server = "10.10.10.3";
-const char* topic = "stepper/1";
+const char* topic = "mini_stepper/1";
 
 WiFiClient espClient;
 PubSubClient client(espClient);
@@ -61,29 +61,19 @@ void callback(char* topic, byte* payload, unsigned int length) {
   for (int i = 0; i < length; i++) {
     Serial.print((char)payload[i]);
     payload[length] = '\0';
-    String messageIn = String((char*)payload);
-    //split out degrees
-    if (messageIn == "ccw") {
-        //this method sets the direction of rotation, has 3 allowed values (CW, CCW, and STOP) 
-        //clockwise and counterclockwise for the first 2
-        stepper.setDirection(CCW);
-        //this method sets the motor to rotate a given number of times, if you don't specify it, 
-        //the motor will rotate untilyou send another command or set the direction to STOP
-        stepper.rotate();
-        rotate1 = true;
-    } else if (messageIn == "cw")
-    {
-        stepper.setDirection(CW);
-        //this method makes the motor rotate a given number of degrees, it works with float
-        //you can give angles like 90.5, but you can't give negative values, it rotates to the direction currently set
-        stepper.rotate();
-        rotatedeg = true;
-    {
-      turnAnticlockwise();
-    } else if (messageIn == "stop") {
-      stepper.setDirection(STOP);
-    }
+     String message = String ((char*)payload);
+    int degrees = message.toInt();
     
+    if (degrees > 360) {
+        stepper.setDirection(CW);
+        stepper.rotate();
+      } else if (degrees > - 360) {
+        stepper.setDirection(CCW);
+        stepper.rotate();
+    } else {
+      stepper.rotateDegrees(degrees);
+    }
+     
   }
   Serial.println();
 
@@ -119,8 +109,9 @@ void loop(){
   if (!client.connected()) {
     reconnect();
   } 
+  yield();
  
-    stepper.run();
+  stepper.run();
   
 }
 
