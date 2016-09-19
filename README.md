@@ -20,9 +20,13 @@ If there is a problem with a sensor firmware code, or pin map, let us know or sh
 Future project goals:
 
 Automatic Device Discovery with mDNS (bonjour)
+
 SSL Level Security 
+
 Smaller board size
+
 Long term power and battery opimization
+
 Even more cost reduction per device if we can find engineering and manufacturing partners to work with. 
 
 Thanks, 
