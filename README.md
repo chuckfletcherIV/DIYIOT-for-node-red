@@ -1,5 +1,5 @@
 # DIYIOT
-Open source IOT hardware and software platform based on ESP8266 chips, MQTT and powered by Node-Red
+Open source IOT hardware and software platform based on cheap commodity sensors, ESP8266-12e chips, the MQTT protocol and powered by Node-Red
 
 See DIY Board and Sensor Pin Map to figure out what board to use for which sensor, also see notes.
 
