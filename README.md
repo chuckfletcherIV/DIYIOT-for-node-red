@@ -5,6 +5,8 @@ The goal of the project is to put sensors (and actuators like servos or leds) on
 
 Using Node-red, these devices can trigger or be triggered by any IOT activity you can think of. Node-red has dozens of supported IOT hooks to services and devices, like Hue or Lifx light bulbs, twitter integration or even the ability to send txt messages via twilio.
 
+No coding is required for basic functionality. All data is sent to Node-red for processing and triggering. Node-red lets you do alot without coding as well, but if you need to code, you can do what you need to with simple javascript. 
+
 DIYIOT is great for home automation projects, DIY escape rooms and halloween displays, and even interactive installations. If desired sensors can be soldered in place, instead of using a more temporary header, for a permanent installation. 
 
 See DIY Board and Sensor Pin Map to figure out what board to use for which sensor (or actuator), also see notes for more advanced usage.
