@@ -1,31 +1,25 @@
-  #include <ESP8266WiFi.h>
+#include <ESP8266WiFi.h>
 #include <PubSubClient.h>
-#include <Servo.h> 
-Servo myservo;
 
 const char* ssid     = "DIYIOT";
 const char* password = "diyiotdiyiot";
 const char* mqtt_server = "10.10.10.3";
-const char* topic = "servo/1";
-char msg[50];
-char message_buffer[100];
-String myMsg;
+const char* topic = "touch/1";
+
+int buttonpin = 13;
 
 WiFiClient espClient;
 PubSubClient client(espClient);
-int servoId = 0;
-int potVal = 0; // Potentiometer value
-int ledPosition; // Position of active LED
-int lastpot = 0;  // last potentiometer reading to compare with
+char msg[50];
 
-void setup()
-{
+void setup() {
+  //start serial connection
+  Serial.begin(115200);
 
-  Serial.begin(115200);  
+  pinMode(buttonpin, INPUT);
   setup_wifi();
   client.setServer(mqtt_server, 1883);
   client.setCallback(callback);
-  myservo.attach(13);
 }
 
 void setup_wifi() {
@@ -49,16 +43,14 @@ void setup_wifi() {
   Serial.println(WiFi.localIP());
 }
 
-
 void callback(char* topic, byte* payload, unsigned int length) {
- int i = 0;
   Serial.print("Message arrived [");
   Serial.print(topic);
   Serial.print("] ");
-  payload[length] = '\0';
-  String serv = String((char*)payload);
-  potVal = potValString.toInt();
-  Serial.println("Received: " + String(potVal));
+  for (int i = 0; i < length; i++) {
+    Serial.print((char)payload[i]);
+  }
+  Serial.println();
 }
 
 void reconnect() {
@@ -71,8 +63,9 @@ void reconnect() {
       Serial.println("connected");
       // Once connected, publish an announcement...
       client.publish(topic, "connected");
+      client.publish("channels", topic);
       // ... and resubscribe
-      client.subscribe(topic);
+      //client.subscribe(topic);
     } else {
       Serial.print("failed, rc=");
       Serial.print(client.state());
@@ -83,16 +76,33 @@ void reconnect() {
   }
 }
 
-void loop()
-{ 
-  
-    if (!client.connected()) {
+void loop() {
+    delay(400);
+
+  if (!client.connected()) {
     reconnect();
   }
 
-        client.loop();        
-        int myPos = map(potVal, 0, 360, -180, 180);
-        myservo.write(myPos);   
+    client.loop();
+    String myMessage = "touch pressed!";
+    myMessage.toCharArray(msg,50);
+    
+    
+  int sensorVal = digitalRead(buttonpin);
+  //print out the value of the pushbutton
+  //Serial.println(sensorVal);
+
+  // Keep in mind the pullup means the pushbutton's
+  // logic is inverted. It goes HIGH when it's open,
+  // and LOW when it's pressed. Turn on pin 13 when the
+  // button's pressed, and off when it's not:
+  if (sensorVal == HIGH) {
+    Serial.print("Publish message: ");
+    Serial.println(msg);
+    client.publish(topic, msg);
+  } else {
+  }
 }
+
 
 

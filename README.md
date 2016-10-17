@@ -32,3 +32,5 @@ Even more cost reduction per device if we can find engineering and manufacturing
 Thanks, 
 
 the DIYIOT team
+
+Join the DIYIOT for Node Red mailing list at https://groups.google.com/forum/#!forum/diyiot-node-red

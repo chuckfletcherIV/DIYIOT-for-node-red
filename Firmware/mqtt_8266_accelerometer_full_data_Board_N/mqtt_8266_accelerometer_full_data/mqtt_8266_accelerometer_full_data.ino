@@ -101,7 +101,8 @@ void reconnect() {
   }
 }
 void loop() {
-  
+  delay(250);
+  yield();
   Wire.beginTransmission(MPU_addr);
   Wire.write(0x3B);  // starting with register 0x3B (ACCEL_XOUT_H)
   Wire.endTransmission(false);

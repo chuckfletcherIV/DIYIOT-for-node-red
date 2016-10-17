@@ -1,22 +1,36 @@
 #include <ESP8266WiFi.h>
 #include <PubSubClient.h>
 
+#include <AccelStepper.h>
+#define HALFSTEP 8
+
+// Motor pin definitions
+#define motorPin1  13     // IN1 on the ULN2003 driver 1
+#define motorPin2  12     // IN2 on the ULN2003 driver 1
+#define motorPin3  14     // IN3 on the ULN2003 driver 1
+#define motorPin4  16     // IN4 on the ULN2003 driver 1
+
+// Initialize with pin sequence IN1-IN3-IN2-IN4 for using the AccelStepper with 28BYJ-48
+AccelStepper stepper(HALFSTEP, motorPin1, motorPin3, motorPin2, motorPin4);
+
 // Update these with values suitable for your network.
 
 const char* ssid     = "DIYIOT";
 const char* password = "diyiotdiyiot";
 const char* mqtt_server = "10.10.10.3";
-const char* topic = "knob/3";
+const char* topic = "mini_stepper/1";
 
 WiFiClient espClient;
 PubSubClient client(espClient);
-//long lastMsg = 0;
+
 char msg[50];
 String data;
 
+//////////////////////////////////////////////////////////////////////////////
 void setup() {
-  pinMode(A0, INPUT);
-  pinMode(BUILTIN_LED, OUTPUT);     // Initialize the BUILTIN_LED pin as an output
+  stepper.setMaxSpeed(1000.0);
+  stepper.setAcceleration(500.0);
+  stepper.setSpeed(500);
   Serial.begin(115200);
   setup_wifi();
   client.setServer(mqtt_server, 1883);
@@ -45,14 +59,19 @@ void setup_wifi() {
 }
 
 void callback(char* topic, byte* payload, unsigned int length) {
-//  Serial.print("Message arrived [");
-//  Serial.print(topic);
-//  Serial.print("] ");
-//  for (int i = 0; i < length; i++) {
-//    Serial.print((char)payload[i]);
-//  }
-//  Serial.println();
-}
+  Serial.print("Message arrived [");
+  Serial.print(topic);
+  Serial.print("] ");
+  for (int i = 0; i < length; i++) {
+    Serial.print((char)payload[i]);
+    payload[length] = '\0';
+     String message = String ((char*)payload);
+    int degrees = message.toInt();   
+    int steps = (int) (degrees * 5.6); 
+    stepper.moveTo(steps);
+    }
+     
+  }
 
 void reconnect() {
   // Loop until we're reconnected
@@ -63,9 +82,9 @@ void reconnect() {
     if (client.connect(topic)) {
       Serial.println("connected");
       // Once connected, publish an announcement...
-      client.publish("channels", topic);
+      client.publish(topic, "connected");
       // ... and resubscribe
-      client.subscribe(topic);
+     client.subscribe(topic);
     } else {
       Serial.print("failed, rc=");
       Serial.print(client.state());
@@ -75,18 +94,19 @@ void reconnect() {
     }
   }
 }
-void loop() {
-  delay(250);
-  data = String (analogRead(A0));
 
+//////////////////////////////////////////////////////////////////////////////
+void loop(){
+    
+  client.loop();    
 
   if (!client.connected()) {
     reconnect();
-  }
-
-    client.loop();
-      data.toCharArray(msg,50);
-      //Serial.print("Publish message: ");
-      //Serial.println(msg);
-      client.publish(topic, msg);
+  } 
+  yield();
+ 
+  stepper.run();
+  
 }
+
+

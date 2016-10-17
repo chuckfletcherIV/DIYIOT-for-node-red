@@ -1,17 +1,17 @@
 #include <ESP8266WiFi.h>
 #include <PubSubClient.h>
 
-
 const char* ssid     = "DIYIOT";
 const char* password = "diyiotdiyiot";
 const char* mqtt_server = "10.10.10.3";
-const char* topic = "sound/2";
-int soundDetectedPin = 13; // Use Pin 10 as our Input
-int soundDetectedVal = HIGH; // This is where we record our Sound Measurement
-boolean bAlarm = false;
-unsigned long lastSoundDetectTime; // Record the time that we measured a sound
-int soundAlarmTime = 500; // Number of milli seconds to keep the sound alarm high
+const char* topic = "vibration/1";
+unsigned long lastvibeTime; // Record the time that we measured a sound
 
+int vibePin = 13; // Use Pin 10 as our Input
+int vibeVal = HIGH; // This is where we record our shock measurement
+boolean bAlarm = false;
+
+int vibeAlarmTime = 500; // Number of milli seconds to keep the knock alarm high
 
 WiFiClient espClient;
 PubSubClient client(espClient);
@@ -19,7 +19,8 @@ PubSubClient client(espClient);
 /////////////////////////////
 //SETUP
 void setup(){
-  pinMode (soundDetectedPin, INPUT) ; // input from the Sound Detection Module
+  Serial.begin(115200);
+  pinMode (vibePin, INPUT) ; // input from the Sound Detection Module
   setup_wifi();
   client.setServer(mqtt_server, 1883);
   client.setCallback(callback);
@@ -85,24 +86,24 @@ void loop(){
       client.loop();   
 
     
-       soundDetectedVal = digitalRead (soundDetectedPin) ; // read the sound alarm time
+       vibeVal = digitalRead (vibePin) ; // read the sound alarm time
   
-      if (soundDetectedVal == LOW) // If we hear a sound
+      if (vibeVal == LOW) // If we feel a vibration
       {
       
-        lastSoundDetectTime = millis(); // record the time of the sound alarm
+        lastvibeTime = millis(); // record the time of the sound alarm
         // The following is so you don't scroll on the output screen
         if (!bAlarm){
-          //Serial.println("Sound Detected");
-          client.publish(topic, "sound");
+          Serial.println("Vibration Detected");
+          client.publish(topic, "No Vibration");
           bAlarm = true;
         }
       }
       else
       {
-        if( (millis()-lastSoundDetectTime) > soundAlarmTime  &&  bAlarm){
-          //Serial.println("No Sound Detected");
-          client.publish(topic, "no sound");
+        if( (millis()-lastvibeTime) >vibeAlarmTime  &&  bAlarm){
+          Serial.println("No Vibration Detected");
+          client.publish(topic, "Vibration Detected");
           bAlarm = false;
         }
       }

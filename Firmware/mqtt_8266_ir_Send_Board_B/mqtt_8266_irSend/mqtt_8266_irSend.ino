@@ -11,6 +11,8 @@ const char* topic = "ir_send/1";
 
 unsigned int code;
 
+unsigned int walle_light[255] = {6300,-2150,600,-1600,1600,-700,1500,-700,600,-1650,600,-1650,600,-1650,1550,-700,600,-1650,1550,-700,600,-1650,1550,-700,600,-1650,600,-1650,1550,-700,550,-1650,650,-1600,1550,-700,600,-1650,1550,-700,600,-1650,600,-1650,1550,-700,550,-1650,650,-1600,2150};
+
 WiFiClient espClient;
 PubSubClient client(espClient);
 char message_buffer[100];
@@ -57,21 +59,25 @@ void callback(char* topic, byte* payload, unsigned int length) {
   String message = String((char*)payload);
   Serial.println("Received: " + String(message));
   
-    String make = getValue(message, ',', 0);
-    String thisCode = String(getValue(message, ',', 1));
-    code = getValue(message, ',', 1).toInt();
-    
-    Serial.println("Found make: " + make);
-    
-   if (make == "nec") {
-    Serial.println("Found Nec Code: " + thisCode);
-   irsend.sendNEC(code, 36);
-   delay(2000);
-  } else if (make == "sony") {
-    Serial.println("Found Sony Code: " + thisCode);
-  irsend.sendSony(code, 12);
-   delay(2000);
-  }
+//    String make = getValue(message, ',', 0);
+//    String thisCode = String(getValue(message, ',', 1));
+//    code = getValue(message, ',', 1).toInt();
+//    
+//    Serial.println("Found make: " + make);
+//    
+//   if (make == "nec") {
+//    Serial.println("Found Nec Code: " + thisCode);
+//   irsend.sendNEC(code, 36);
+//   delay(2000);
+//  } else if (make == "sony") {
+//    Serial.println("Found Sony Code: " + thisCode);
+//  irsend.sendSony(code, 12);
+//   delay(2000);
+//  }
+
+if (message == "walle_light") {
+     irsend.sendRaw(walle_light, 255, 32);
+}
 
 //		SEND_RC5
 //		SEND_RC6

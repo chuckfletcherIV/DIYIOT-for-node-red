@@ -1,24 +1,22 @@
 #include <ESP8266WiFi.h>
 #include <PubSubClient.h>
 
-// Update these with values suitable for your network.
-
 const char* ssid     = "DIYIOT";
 const char* password = "diyiotdiyiot";
 const char* mqtt_server = "10.10.10.3";
-const char* topic = "relay/2";
+const char* topic = "mercury/1";
+
+int buttonpin = 13;
 
 WiFiClient espClient;
 PubSubClient client(espClient);
-long lastMsg = 0;
 char msg[50];
-char message_buffer[100];
-int value = 0;
-bool relayOpen = false;
 
 void setup() {
-  pinMode(13, OUTPUT);
+  //start serial connection
   Serial.begin(115200);
+
+  pinMode(buttonpin, INPUT);
   setup_wifi();
   client.setServer(mqtt_server, 1883);
   client.setCallback(callback);
@@ -46,35 +44,28 @@ void setup_wifi() {
 }
 
 void callback(char* topic, byte* payload, unsigned int length) {
-  int i = 0;
   Serial.print("Message arrived [");
   Serial.print(topic);
   Serial.print("] ");
   for (int i = 0; i < length; i++) {
-    message_buffer[i] = payload[i];
+    Serial.print((char)payload[i]);
   }
-    message_buffer[i]='\0';
-    String myMsg = String(message_buffer);
-  
-  // Switch on the relay if an 1 was received as first character
-  if (myMsg = 'open') {
-    relayOpen=true;
-  } else {
-    relayOpen=false;
-  }
+  Serial.println();
 }
 
 void reconnect() {
   // Loop until we're reconnected
   while (!client.connected()) {
-    Serial.print("Attempting MQTT connection...");
+    
+      Serial.print("Attempting MQTT connection...");
     // Attempt to connect
-    if (client.connect("ESP8266Client")) {
+    if (client.connect(topic)) {
       Serial.println("connected");
       // Once connected, publish an announcement...
       client.publish(topic, "connected");
+      client.publish("channels", topic);
       // ... and resubscribe
-      client.subscribe(topic);
+      //client.subscribe(topic);
     } else {
       Serial.print("failed, rc=");
       Serial.print(client.state());
@@ -84,31 +75,34 @@ void reconnect() {
     }
   }
 }
+
 void loop() {
+    delay(250);
 
   if (!client.connected()) {
     reconnect();
   }
-  client.loop();
 
-  if (relayOpen) {
-    digitalWrite(13, HIGH);
-    Serial.println("Opened Relay: Delaying Close 2sec");
-    delay(100);
-    relayOpen=false;
+    client.loop();
+    String myMessage = "Tilt Detected";
+    myMessage.toCharArray(msg,50);
+    
+    
+  int sensorVal = digitalRead(buttonpin);
+  //print out the value of the pushbutton
+  //Serial.println(sensorVal);
+
+  // Keep in mind the pullup means the pushbutton's
+  // logic is inverted. It goes HIGH when it's open,
+  // and LOW when it's pressed. Turn on pin 13 when the
+  // button's pressed, and off when it's not:
+  if (sensorVal == HIGH) {
+    Serial.print("Publish message: ");
+    Serial.println(msg);
+    client.publish(topic, msg);
+  } else {
   }
-  else {
-    digitalWrite(13, LOW);
-  }
-
-
-//  long now = millis();
-//  if (now - lastMsg > 2000) {
-//    lastMsg = now;
-//    ++value;
-//    snprintf (msg, 75, "hello world #%ld", value);
-//    Serial.print("Publish message: ");
-//    Serial.println(msg);
-//    client.publish("outTopic", msg);
-//  }
 }
+
+
+
